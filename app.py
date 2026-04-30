@@ -77,37 +77,16 @@ def init_db():
 
 init_db()
 
-# Crear usuario admin con password 1962
-conn = sqlite3.connect("tienda.db")
-cursor = conn.cursor()
-cursor.execute("DELETE FROM usuarios")
-cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', '1962')")
-print("Admin user reset: admin/1962")
-conn.commit()
-conn.close()
-
-@app.route("/debug-db")
-def debug_db():
-    conn = sqlite3.connect("tienda.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM usuarios")
-    users = cursor.fetchall()
-    cursor.execute("PRAGMA table_info(usuarios)")
-    schema = cursor.fetchall()
-    conn.close()
-    return f"Usuarios: {users}<br>Schema: {schema}"
-
-@app.route("/reset-admin")
-def reset_admin():
+# Crear usuario admin al iniciar
+def create_admin():
     conn = sqlite3.connect("tienda.db")
     cursor = conn.cursor()
     cursor.execute("DELETE FROM usuarios")
     cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', '1962')")
-    cursor.execute("SELECT * FROM usuarios")
-    users = cursor.fetchall()
     conn.commit()
     conn.close()
-    return f"Admin reseteado. Usuarios en BD: {users}"
+
+create_admin()
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -156,7 +135,6 @@ def login():
 
         cursor.execute("SELECT id, password FROM usuarios WHERE usuario=?", (usuario,))
         user = cursor.fetchone()
-        print(f"LOGIN DEBUG: usuario={usuario}, password={password}, user={user}")
         conn.close()
 
         if user and user["password"] == password:
