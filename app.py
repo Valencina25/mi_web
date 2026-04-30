@@ -80,14 +80,21 @@ init_db()
 # Crear usuario admin con password 1962
 conn = sqlite3.connect("tienda.db")
 cursor = conn.cursor()
-cursor.execute("SELECT * FROM usuarios")
-print("USUARIOS ANTES:", cursor.fetchall())
-cursor.execute("DELETE FROM usuarios WHERE usuario='admin'")
+cursor.execute("DELETE FROM usuarios")
 cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', '1962')")
-cursor.execute("SELECT * FROM usuarios")
-print("USUARIOS DESPUÉS:", cursor.fetchall())
+print("Admin user reset: admin/1962")
 conn.commit()
 conn.close()
+
+@app.route("/reset-admin")
+def reset_admin():
+    conn = sqlite3.connect("tienda.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM usuarios")
+    cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', '1962')")
+    conn.commit()
+    conn.close()
+    return "Admin reset: admin/1962"
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
