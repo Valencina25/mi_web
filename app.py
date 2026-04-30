@@ -5,7 +5,7 @@ from os import environ
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", os.urandom(24).hex())
+app.secret_key = os.environ.get("SECRET_KEY", "mi_web_secret_key_fija_2024")
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
