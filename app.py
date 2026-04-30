@@ -92,9 +92,11 @@ def reset_admin():
     cursor = conn.cursor()
     cursor.execute("DELETE FROM usuarios")
     cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', '1962')")
+    cursor.execute("SELECT * FROM usuarios")
+    users = cursor.fetchall()
     conn.commit()
     conn.close()
-    return "Admin reset: admin/1962"
+    return f"Admin reseteado. Usuarios en BD: {users}"
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
