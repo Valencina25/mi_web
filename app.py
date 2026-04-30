@@ -233,7 +233,26 @@ def procesar_compra():
 def admin():
     if "usuario" not in session:
         return redirect(url_for("login"))
-    return render_template("admin.html", productos=[], compras=[], mensajes=[])
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT id, nombre, precio, imagen, categoria FROM productos")
+    productos = c.fetchall()
+    c.execute("""SELECT c.id, c.usuario, c.nombre, c.telefono, c.direccion, c.email, c.total, c.fecha
+        FROM compras c
+        ORDER BY c.fecha DESC""")
+    compras_raw = c.fetchall()
+    compras = []
+    for compra in compras_raw:
+        c2 = conn.cursor()
+        c2.execute("SELECT producto_nombre || ' x' || cantidad as item FROM compra_detalle WHERE compra_id=?", (compra["id"],))
+        items = [row["item"] for row in c2.fetchall()]
+        compra_dict = dict(compra)
+        compra_dict["productos"] = ", ".join(items) if items else ""
+        compras.append(compra_dict)
+    c.execute("SELECT id, nombre, email, mensaje, fecha FROM mensajes ORDER BY fecha DESC")
+    mensajes = c.fetchall()
+    conn.close()
+    return render_template("admin.html", productos=productos, compras=compras, mensajes=mensajes)
 
 @app.route("/admin-test")
 def admin_test():
