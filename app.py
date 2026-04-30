@@ -86,6 +86,17 @@ print("Admin user reset: admin/1962")
 conn.commit()
 conn.close()
 
+@app.route("/debug-db")
+def debug_db():
+    conn = sqlite3.connect("tienda.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM usuarios")
+    users = cursor.fetchall()
+    cursor.execute("PRAGMA table_info(usuarios)")
+    schema = cursor.fetchall()
+    conn.close()
+    return f"Usuarios: {users}<br>Schema: {schema}"
+
 @app.route("/reset-admin")
 def reset_admin():
     conn = sqlite3.connect("tienda.db")
