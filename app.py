@@ -72,11 +72,15 @@ def init_db():
         )
     """)
 
-    # Crear admin si no existe
-    cursor.execute("SELECT id FROM usuarios WHERE usuario=?", ("admin",))
-    if not cursor.fetchone():
+    # Crear o actualizar admin (migrar password a hash si es necesario)
+    cursor.execute("SELECT id, password FROM usuarios WHERE usuario=?", ("admin",))
+    admin = cursor.fetchone()
+    if not admin:
         cursor.execute("INSERT INTO usuarios (usuario, password) VALUES (?, ?)",
                        ("admin", generate_password_hash("1962")))
+    elif not admin["password"].startswith("pbkdf2:sha256"):
+        cursor.execute("UPDATE usuarios SET password=? WHERE usuario=?",
+                       (generate_password_hash("1962"), "admin"))
 
     conn.commit()
     conn.close()
