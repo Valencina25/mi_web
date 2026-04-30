@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito - Huerto de Juan</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages" role="alert" aria-live="polite">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <header class="header" role="banner">
+        <div class="container">
+            <a href="/" class="logo">🛒 Carrito</a>
+            <nav class="nav-list" style="display: flex; gap: var(--space-md);">
+                <a href="/" class="nav-link">🏠 Tienda</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="section">
+        <div class="container">
+            <h1 class="section-title">🛒 Tu Carrito</h1>
+
+            {% if carrito %}
+            <div class="productos-grid" style="max-width: 800px; margin: 0 auto;">
+                {% for item in carrito %}
+                <article class="producto">
+                    {% if item.imagen %}
+                    <img src="{{ url_for('static', filename='uploads/' + item.imagen) }}"
+                         alt="{{ item.nombre }}"
+                         class="producto-img"
+                         loading="lazy">
+                    {% endif %}
+                    <div class="producto-content">
+                        <h3 class="producto-title">{{ item.nombre }}</h3>
+                        <p class="producto-precio">{{ item.precio }} €</p>
+                        {% if item.cantidad %}
+                        <p>Cantidad: {{ item.cantidad }}</p>
+                        {% endif %}
+
+                        <a href="/remove_carrito/{{ item.id }}" class="btn btn-outline"
+                           onclick="return confirm('¿Eliminar?')">
+                            🗑️ Quitar
+                        </a>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+
+            <div style="text-align: center; margin: var(--space-xl) 0;">
+                <p class="producto-precio">Total: {{ total }} €</p>
+
+                <div style="display: flex; gap: var(--space-md); justify-content: center; margin-top: var(--space-lg); flex-wrap: wrap;">
+                    <a href="/checkout" class="btn btn-primary">💳 Finalizar Compra</a>
+                    <a href="/vaciar_carrito" class="btn btn-outline">🗑️ Vaciar</a>
+                </div>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: var(--space-2xl);">
+                <p style="font-size: var(--text-xl); margin-bottom: var(--space-lg);">Tu carrito está vacío 🛒</p>
+                <a href="/" class="btn btn-primary">🌱 Ver Productos</a>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+</body>
+</html>

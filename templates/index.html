@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Huerto ecológico con productos frescos directos del campo. Compra online frutas y verduras naturales.">
+    <meta name="keywords" content="huerto ecológico, verduras frescas, productos naturales, compra online huerto">
+    <meta name="author" content="Juan">
+    <title>Huerto de Juan - Productos Ecológicos</title>
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages" role="alert" aria-live="polite">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- HEADER -->
+    <header class="header" role="banner">
+        <div class="container">
+            <a href="/" class="logo" aria-label="Huerto de Juan - Ir a inicio">
+                🌱 Huerto de Juan
+            </a>
+
+            <button class="menu-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="main-nav">
+                ☰
+            </button>
+
+            <nav id="main-nav" class="nav-list" role="navigation" aria-label="Menú principal">
+                <a href="/" class="nav-link">🏠 Inicio</a>
+                <a href="/#productos" class="nav-link">🌱 Productos</a>
+                <a href="/#contacto" class="nav-link">📩 Contacto</a>
+                <a href="/carrito" class="nav-link">🛒 Carrito</a>
+                <a href="/login" class="nav-link">🔐 Admin</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="libro">
+
+    <!-- SLIDER -->
+    <div class="slider" role="region" aria-label="Carrusel de imágenes" style="background: #1a472a;">
+        <div class="slider-wrapper" id="slider-wrapper">
+                <div class="slide" style="background-image: url('/static/img/juan.jpg'); background-size: cover; background-position: center;">
+                    <div class="slide-caption">
+                        <h3>Productos 100% Ecológicos</h3>
+                        <p>Del huerto a tu mesa</p>
+                    </div>
+                </div>
+                <div class="slide" style="background-image: url('/static/img/tomate rosa.jpg'); background-size: cover; background-position: center;">
+                    <div class="slide-caption">
+                        <h3>Tomates Frescos</h3>
+                        <p>Cultivados con amor</p>
+                    </div>
+                </div>
+                <div class="slide" style="background-image: url('/static/img/lechuga.jpg'); background-size: cover; background-position: center;">
+                    <div class="slide-caption">
+                        <h3>Lechugas Crujientes</h3>
+                        <p>Frescas cada día</p>
+                    </div>
+                </div>
+                <div class="slide" style="background-image: url('/static/img/pimiento italiano.jpg'); background-size: cover; background-position: center;">
+                    <div class="slide-caption">
+                        <h3>Pimientos Italianos</h3>
+                        <p>Sabor auténtico</p>
+                    </div>
+                </div>
+                <div class="slide" style="background-image: url('/static/img/cebollino.jpg'); background-size: cover; background-position: center;">
+                    <div class="slide-caption">
+                        <h3>Hierbas Frescas</h3>
+                        <p>Para tus recetas</p>
+                    </div>
+                </div>
+        </div>
+
+        <div class="slider-progress" id="slider-progress"></div>
+
+        <button class="slider-btn prev" aria-label="Imagen anterior">❮</button>
+        <button class="slider-btn next" aria-label="Imagen siguiente">❯</button>
+
+        <div class="slider-dots" role="tablist" aria-label="Navegación del slider">
+                <button class="dot active" role="tab" aria-selected="true" aria-label="Slide 1"></button>
+                <button class="dot" role="tab" aria-selected="false" aria-label="Slide 2"></button>
+                <button class="dot" role="tab" aria-selected="false" aria-label="Slide 3"></button>
+                <button class="dot" role="tab" aria-selected="false" aria-label="Slide 4"></button>
+                <button class="dot" role="tab" aria-selected="false" aria-label="Slide 5"></button>
+        </div>
+    </div>
+
+    <section class="section" aria-labelledby="sobre-title">
+            <div class="container">
+                <h2 id="sobre-title" class="section-title">📖 Nuestra Historia</h2>
+                <p style="text-align: center; max-width: 700px; margin: 0 auto;">
+                    Cultivamos productos ecológicos con pasión, respetando la tierra y
+                    ofreciendo calidad directa del huerto a tu hogar.
+                </p>
+            </div>
+        </section>
+
+        <!-- PRODUCTOS -->
+        <section id="productos" class="section" aria-labelledby="productos-title">
+            <div class="container">
+                <h2 id="productos-title" class="section-title">🌱 Productos</h2>
+
+                <div class="filtros" role="group" aria-label="Filtrar productos">
+                    <button class="filtro-btn active" data-filter="todos">Todos</button>
+                    {% for c in categorias %}
+                    <button class="filtro-btn" data-filter="{{ c }}">{{ c.capitalize() }}</button>
+                    {% endfor %}
+                </div>
+
+                <div class="productos-grid" id="productos-container" role="list">
+                    {% for p in productos %}
+                    <article class="producto" data-categoria="{{ p[4] }}" role="listitem">
+                        <img src="{{ url_for('static', filename='uploads/' + p[3]) }}"
+                             alt="{{ p[1] }}"
+                             class="producto-img"
+                             loading="lazy">
+                        <div class="producto-content">
+                            <h3 class="producto-title">{{ p[1] }}</h3>
+                            <p class="producto-categoria">{{ p[4] }}</p>
+                            <p class="producto-precio">{{ p[2] }} €</p>
+
+                            <form action="/add_carrito" method="POST" aria-label="Añadir {{ p[1] }} al carrito">
+                                <input type="hidden" name="producto_id" value="{{ p[0] }}">
+                                <input type="hidden" name="nombre" value="{{ p[1] }}">
+                                <input type="hidden" name="precio" value="{{ p[2] }}">
+                                <button type="submit" class="btn btn-primary">Añadir 🛒</button>
+                            </form>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACTO -->
+        <section id="contacto" class="section" aria-labelledby="contacto-title">
+            <div class="container">
+                <h2 id="contacto-title" class="section-title">�� Contacto</h2>
+
+                <div class="contacto-grid">
+                    <div class="info-contacto">
+                        <div class="info-item">
+                            <span class="info-icon" aria-hidden="true">📍</span>
+                            <address>Calle ITALICA, 6 - Valencina Concepción - Sevilla</address>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon" aria-hidden="true">📞</span>
+                            <a href="tel:+34652864678">+34 652 864 678</a>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-icon" aria-hidden="true">📧</span>
+                            <a href="mailto:valencina2012@hotmail.es">valencina2012@hotmail.es</a>
+                        </div>
+                    </div>
+
+                    <form action="/contacto" method="POST" class="contacto-form">
+                        <div class="form-group">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" id="nombre" name="nombre" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mensaje">Mensaje</label>
+                            <textarea id="mensaje" name="mensaje" class="form-textarea" required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-secondary">Enviar mensaje</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <p>© 2024 Huerto de Juan - <a href="#">Política de privacidad</a></p>
+        </div>
+    </footer>
+
+    </div>
+
+</body>
+</html>

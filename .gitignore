@@ -1,0 +1,40 @@
+# Base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Credenciales y configuración sensible
+usuario.py
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+.venv/
+
+# Entorno virtual
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Archivos de ejemplo
+.env.example (copiar a .env y añadir .env)
+
+# Archivos varios
+*.log

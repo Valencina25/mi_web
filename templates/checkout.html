@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedido Confirmado - Huerto de Juan</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages" role="alert" aria-live="polite">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <main class="section" style="min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+        <div class="container" style="max-width: 500px; text-align: center;">
+            <div class="producto" style="padding: var(--space-2xl);">
+                <span style="font-size: 4rem; display: block; margin-bottom: var(--space-lg);">✅</span>
+
+                <h1 style="margin-bottom: var(--space-md);">¡Pedido Confirmado!</h1>
+
+                <p style="font-size: var(--text-lg); margin-bottom: var(--space-lg);">
+                    Gracias por tu compra. Tus productos ecológicos van en camino 🚚
+                </p>
+
+                {% if total_checkout %}
+                <p class="producto-precio" style="font-size: var(--text-2xl);">
+                    Total: {{ total_checkout }} €
+                </p>
+                {% endif %}
+
+                <a href="/" class="btn btn-primary" style="margin-top: var(--space-xl);">
+                    🛒 Seguir Comprando
+                </a>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
