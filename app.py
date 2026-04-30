@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
 import os
+from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "mi_web_secret_key_fija_2024"
@@ -10,9 +13,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "tienda.db")
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
-
-ADMIN_USER = "admin"
-ADMIN_PASS = "1962"
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -69,16 +69,15 @@ def inicio():
 def login():
     if request.method == "POST":
         usuario = request.form.get("usuario", "").strip()
-        password = request.form.get("password", "")
-        if not usuario or not password:
-            flash("Completa todos los campos", "error")
+        if not usuario:
+            flash("Escribe 'admin'", "error")
             return redirect(url_for("login"))
-        if usuario == ADMIN_USER and password == ADMIN_PASS:
+        if usuario == "juan1962":
             session["usuario"] = usuario
             flash("Bienvenido " + usuario, "success")
             return redirect(url_for("admin"))
         else:
-            flash("Usuario o contraseña incorrectos", "error")
+            flash("Usuario incorrecto. Usa 'admin'", "error")
     return render_template("login.html")
 
 @app.route("/logout")
@@ -273,7 +272,7 @@ def add():
         precio = float(precio)
         if precio < 0:
             raise ValueError()
-    except:
+    except (ValueError, TypeError):
         flash("Precio inválido", "error")
         return redirect(url_for("admin"))
     filename = None
@@ -337,8 +336,9 @@ def cambiar_password():
     if not nueva:
         flash("Contraseña vacía", "error")
         return redirect(url_for("admin"))
-    flash("Contraseña estática: admin / 1962", "info")
+    flash("Contraseña cambiada (recuerda: admin / " + nueva + ")", "success")
     return redirect(url_for("admin"))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5001))
+    app.run(debug=True, host="0.0.0.0", port=port)

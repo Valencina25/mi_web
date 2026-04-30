@@ -1,5 +1,4 @@
 import sqlite3
-from werkzeug.security import generate_password_hash
 
 DB_PATH = "tienda.db"
 conn = sqlite3.connect(DB_PATH)
@@ -71,7 +70,7 @@ CREATE TABLE IF NOT EXISTS mensajes (
 cursor.execute("SELECT id FROM usuarios WHERE usuario=?", ("admin",))
 if not cursor.fetchone():
     cursor.execute("INSERT INTO usuarios (usuario, password) VALUES (?, ?)",
-                   ("admin", generate_password_hash("1962")))
+                   ("admin", "1962"))
 
 conn.commit()
 conn.close()
