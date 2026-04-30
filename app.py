@@ -243,11 +243,12 @@ def admin():
     compras_raw = c.fetchall()
     compras = []
     for compra in compras_raw:
-        c.execute("SELECT producto_nombre || ' x' || cantidad as item FROM compra_detalle WHERE compra_id=?", (compra["id"],))
-        items = [row["item"] for row in c.fetchall()]
-        compra = dict(compra)
-        compra["productos"] = ", ".join(items) if items else ""
-        compras.append(compra)
+        c2 = conn.cursor()
+        c2.execute("SELECT producto_nombre || ' x' || cantidad as item FROM compra_detalle WHERE compra_id=?", (compra["id"],))
+        items = [row["item"] for row in c2.fetchall()]
+        compra_dict = dict(compra)
+        compra_dict["productos"] = ", ".join(items) if items else ""
+        compras.append(compra_dict)
     c.execute("SELECT id, nombre, email, mensaje, fecha FROM mensajes ORDER BY fecha DESC")
     mensajes = c.fetchall()
     conn.close()
