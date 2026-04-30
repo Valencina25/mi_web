@@ -254,6 +254,10 @@ def admin():
     conn.close()
     return render_template("admin.html", productos=productos, compras=compras, mensajes=mensajes)
 
+@app.route("/admin-test")
+def admin_test():
+    return "Admin route works!"
+
 @app.route("/add", methods=["POST"])
 def add():
     if "usuario" not in session:
