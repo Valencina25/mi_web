@@ -78,7 +78,7 @@ def init_db():
     if not admin:
         cursor.execute("INSERT INTO usuarios (usuario, password) VALUES (?, ?)",
                        ("admin", generate_password_hash("1962")))
-    elif not admin["password"].startswith("pbkdf2:sha256"):
+    elif not admin[1].startswith("pbkdf2:sha256"):
         cursor.execute("UPDATE usuarios SET password=? WHERE usuario=?",
                        (generate_password_hash("1962"), "admin"))
 
