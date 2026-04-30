@@ -3,15 +3,17 @@ import sqlite3
 import os
 from os import environ
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "mi_web_secret_key_fija_2024")
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tienda.db")
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 
 def init_db():
-    conn = sqlite3.connect("tienda.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS productos (
@@ -25,7 +27,7 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            usuario TEXT,
+            usuario TEXT UNIQUE,
             password TEXT
         )
     """)
@@ -70,29 +72,25 @@ def init_db():
         )
     """)
 
-    # Solo crear tabla, no insertar usuario
+    # Crear admin si no existe
+    cursor.execute("SELECT id FROM usuarios WHERE usuario=?", ("admin",))
+    if not cursor.fetchone():
+        cursor.execute("INSERT INTO usuarios (usuario, password) VALUES (?, ?)",
+                       ("admin", generate_password_hash("1962")))
+
     conn.commit()
     conn.close()
 
 
 init_db()
 
-# Crear usuario admin al iniciar (usar sqlite3.Row para consistencia)
-conn = sqlite3.connect("tienda.db")
-conn.row_factory = sqlite3.Row
-cursor = conn.cursor()
-cursor.execute("DELETE FROM usuarios")
-cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', '1962')")
-print("Admin creado: admin/1962")
-conn.commit()
-conn.close()
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def get_db():
-    conn = sqlite3.connect("tienda.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -136,7 +134,7 @@ def login():
         user = cursor.fetchone()
         conn.close()
 
-        if user and user["password"] == password:
+        if user and check_password_hash(user["password"], password):
             session["usuario"] = usuario
             flash("Bienvenido " + usuario, "success")
             return redirect(url_for("admin"))
@@ -167,17 +165,8 @@ def carrito():
     cursor = conn.cursor()
 
     if usuario:
-        cursor.execute("""
-            SELECT p.id, p.nombre, p.precio, p.imagen, c.cantidad
-            FROM carrito c
-            JOIN productos p ON c.producto_id = p.id
-            WHERE c.usuario = ?
-        """, (usuario,))
-        items = cursor.fetchall()
-        total = sum(i["precio"] * i["cantidad"] for i in items)
-    else:
         items = session.get("carrito", [])
-        total = sum(i["precio"] for i in items)
+        total = sum(i["precio"] * i.get("cantidad", 1) for i in items)
 
     conn.close()
     return render_template("carrito.html", carrito=items, total=total)
@@ -214,7 +203,17 @@ def add_carrito():
     else:
         if "carrito" not in session:
             session["carrito"] = []
-        session["carrito"].append({"nombre": nombre, "precio": precio})
+        carrito = session["carrito"]
+        # Check if product already exists
+        found = False
+        for item in carrito:
+            if item["nombre"] == nombre:
+                item["cantidad"] = item.get("cantidad", 1) + 1
+                found = True
+                break
+        if not found:
+            carrito.append({"id": int(producto_id), "nombre": nombre, "precio": precio, "cantidad": 1})
+        session["carrito"] = carrito
         flash("Añadido al carrito", "success")
 
     return redirect(url_for("inicio"))
@@ -230,7 +229,8 @@ def remove_carrito(producto_id):
         conn.commit()
         conn.close()
     else:
-        session.pop("carrito", None)
+        if "carrito" in session:
+            session["carrito"] = [i for i in session["carrito"] if i.get("id") != producto_id]
     flash("Producto eliminado", "info")
     return redirect(url_for("carrito"))
 
@@ -244,7 +244,8 @@ def vaciar_carrito():
         cursor.execute("DELETE FROM carrito WHERE usuario=?", (usuario,))
         conn.commit()
         conn.close()
-    session.pop("carrito", None)
+    else:
+        session.pop("carrito", None)
     flash("Carrito vaciado", "info")
     return redirect(url_for("carrito"))
 
@@ -306,7 +307,7 @@ def procesar_compra():
         cursor.execute("DELETE FROM carrito WHERE usuario=?", (usuario,))
     else:
         items = session.get("carrito", [])
-        total = sum(i["precio"] for i in items) if items else 0
+        total = sum(i["precio"] * i.get("cantidad", 1) for i in items) if items else 0
 
         cursor.execute("""
             INSERT INTO compras (nombre, telefono, direccion, email, total)
@@ -317,8 +318,8 @@ def procesar_compra():
         for item in items:
             cursor.execute("""
                 INSERT INTO compra_detalle (compra_id, producto_nombre, cantidad, precio_unitario)
-                VALUES (?, ?, 1, ?)
-            """, (compra_id, item["nombre"], item["precio"]))
+                VALUES (?, ?, ?, ?)
+            """, (compra_id, item["nombre"], item.get("cantidad", 1), item["precio"]))
 
         session["carrito"] = []
 
@@ -482,7 +483,7 @@ def cambiar_password():
 
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("UPDATE usuarios SET password=? WHERE usuario=?", (nueva, session["usuario"]))
+    cursor.execute("UPDATE usuarios SET password=? WHERE usuario=?", (generate_password_hash(nueva), session["usuario"]))
     conn.commit()
     conn.close()
 
