@@ -159,7 +159,7 @@ def login():
         print(f"LOGIN DEBUG: usuario={usuario}, password={password}, user={user}")
         conn.close()
 
-        if user and user["password"] == password:
+        if user and user[2] == password:
             session["usuario"] = usuario
             flash("Bienvenido " + usuario, "success")
             return redirect(url_for("admin"))
