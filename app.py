@@ -85,7 +85,11 @@ password = os.environ.get("ADMIN_PASS", "1962")
 cursor.execute("SELECT id FROM usuarios WHERE usuario=?", ("admin",))
 if not cursor.fetchone():
     cursor.execute("INSERT INTO usuarios (usuario, password) VALUES (?, ?)", ("admin", password))
-    conn.commit()
+    print(f"Usuario admin creado con password: {password}")
+else:
+    cursor.execute("UPDATE usuarios SET password=? WHERE usuario=?", (password, "admin"))
+    print(f"Password admin actualizado a: {password}")
+conn.commit()
 conn.close()
 
 def allowed_file(filename):
