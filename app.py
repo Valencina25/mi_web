@@ -145,6 +145,7 @@ def login():
 
         cursor.execute("SELECT id, password FROM usuarios WHERE usuario=?", (usuario,))
         user = cursor.fetchone()
+        print(f"LOGIN DEBUG: usuario={usuario}, password={password}, user={user}")
         conn.close()
 
         if user and user["password"] == password:
