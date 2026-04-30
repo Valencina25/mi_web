@@ -80,9 +80,12 @@ init_db()
 # Crear usuario admin con password 1962
 conn = sqlite3.connect("tienda.db")
 cursor = conn.cursor()
+cursor.execute("SELECT * FROM usuarios")
+print("USUARIOS ANTES:", cursor.fetchall())
 cursor.execute("DELETE FROM usuarios WHERE usuario='admin'")
 cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', '1962')")
-print("Admin user set: admin/1962")
+cursor.execute("SELECT * FROM usuarios")
+print("USUARIOS DESPUÉS:", cursor.fetchall())
 conn.commit()
 conn.close()
 
