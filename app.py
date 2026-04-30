@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import sqlite3
 import os
 from werkzeug.utils import secure_filename
-from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 app.secret_key = "mi_web_secret_key_fija_2024"
@@ -13,7 +12,7 @@ DB_PATH = os.path.join(BASE_DIR, "tienda.db")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 ADMIN_USER = "admin"
-ADMIN_PASS_HASH = "scrypt:32768:8:1$2N65ppaaiP12Cbj6$9d669deff172ffec619ca58d1f5d66dc50639c219f11273f3aae9a049b7fb1d9131b474e8a4f5950166e98c7c693ac093a8adf87813571cff4e128bf7ed242fd"
+ADMIN_PASS = "1962"
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -23,11 +22,30 @@ def get_db():
 def init_db():
     conn = get_db()
     c = conn.cursor()
-    c.execute("CREATE TABLE IF NOT EXISTS productos (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, precio REAL, imagen TEXT, categoria TEXT)")
-    c.execute("CREATE TABLE IF NOT EXISTS carrito (id INTEGER PRIMARY KEY AUTOINCREMENT, usuario TEXT, producto_id INTEGER, cantidad INTEGER DEFAULT 1, UNIQUE(usuario, producto_id))")
-    c.execute("CREATE TABLE IF NOT EXISTS compras (id INTEGER PRIMARY KEY AUTOINCREMENT, usuario TEXT, nombre TEXT, telefono TEXT, direccion TEXT, email TEXT, total REAL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
-    c.execute("CREATE TABLE IF NOT EXISTS compra_detalle (id INTEGER PRIMARY KEY AUTOINCREMENT, compra_id INTEGER, producto_nombre TEXT, cantidad INTEGER, precio_unitario REAL)")
-    c.execute("CREATE TABLE IF NOT EXISTS mensajes (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT, email TEXT, mensaje TEXT, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+    c.execute("""CREATE TABLE IF NOT EXISTS productos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT, precio REAL, imagen TEXT, categoria TEXT
+    )""")
+    c.execute("""CREATE TABLE IF NOT EXISTS carrito (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario TEXT, producto_id INTEGER, cantidad INTEGER DEFAULT 1,
+        UNIQUE(usuario, producto_id)
+    )""")
+    c.execute("""CREATE TABLE IF NOT EXISTS compras (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario TEXT, nombre TEXT, telefono TEXT, direccion TEXT,
+        email TEXT, total REAL, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )""")
+    c.execute("""CREATE TABLE IF NOT EXISTS compra_detalle (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        compra_id INTEGER, producto_nombre TEXT, cantidad INTEGER,
+        precio_unitario REAL
+    )""")
+    c.execute("""CREATE TABLE IF NOT EXISTS mensajes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT, email TEXT, mensaje TEXT,
+        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )""")
     conn.commit()
     conn.close()
 
@@ -55,7 +73,7 @@ def login():
         if not usuario or not password:
             flash("Completa todos los campos", "error")
             return redirect(url_for("login"))
-        if usuario == ADMIN_USER and check_password_hash(ADMIN_PASS_HASH, password):
+        if usuario == ADMIN_USER and password == ADMIN_PASS:
             session["usuario"] = usuario
             flash("Bienvenido " + usuario, "success")
             return redirect(url_for("admin"))
@@ -78,7 +96,10 @@ def carrito():
     items = []
     total = 0
     if usuario:
-        c.execute("SELECT p.id, p.nombre, p.precio, p.imagen, c.cantidad FROM carrito c JOIN productos p ON c.producto_id = p.id WHERE c.usuario = ?", (usuario,))
+        c.execute("""SELECT p.id, p.nombre, p.precio, p.imagen, c.cantidad
+            FROM carrito c
+            JOIN productos p ON c.producto_id = p.id
+            WHERE c.usuario = ?""", (usuario,))
         items = c.fetchall()
         total = sum(row["precio"] * row["cantidad"] for row in items)
     else:
@@ -104,7 +125,10 @@ def add_carrito():
             flash("Producto no encontrado", "error")
             conn.close()
             return redirect(url_for("inicio"))
-        c.execute("INSERT INTO carrito (usuario, producto_id, cantidad) VALUES (?, ?, 1) ON CONFLICT(usuario, producto_id) DO UPDATE SET cantidad = cantidad + 1", (usuario, producto_id))
+        c.execute("""INSERT INTO carrito (usuario, producto_id, cantidad)
+            VALUES (?, ?, 1)
+            ON CONFLICT(usuario, producto_id) DO UPDATE SET cantidad = cantidad + 1""",
+            (usuario, producto_id))
         conn.commit()
         conn.close()
         flash("Añadido al carrito", "success")
@@ -177,21 +201,28 @@ def procesar_compra():
     conn = get_db()
     c = conn.cursor()
     if usuario:
-        c.execute("SELECT p.nombre, p.precio, c.cantidad FROM carrito c JOIN productos p ON c.producto_id = p.id WHERE c.usuario=?", (usuario,))
+        c.execute("""SELECT p.nombre, p.precio, c.cantidad
+            FROM carrito c
+            JOIN productos p ON c.producto_id = p.id
+            WHERE c.usuario=?""", (usuario,))
         items = c.fetchall()
         total = sum(row["precio"] * row["cantidad"] for row in items)
-        c.execute("INSERT INTO compras (usuario, nombre, telefono, direccion, email, total) VALUES (?, ?, ?, ?, ?, ?)", (usuario, nombre, telefono, direccion, email, total))
+        c.execute("""INSERT INTO compras (usuario, nombre, telefono, direccion, email, total)
+            VALUES (?, ?, ?, ?, ?, ?)""", (usuario, nombre, telefono, direccion, email, total))
         compra_id = c.lastrowid
         for item in items:
-            c.execute("INSERT INTO compra_detalle (compra_id, producto_nombre, cantidad, precio_unitario) VALUES (?, ?, ?, ?)", (compra_id, item["nombre"], item["cantidad"], item["precio"]))
+            c.execute("""INSERT INTO compra_detalle (compra_id, producto_nombre, cantidad, precio_unitario)
+                VALUES (?, ?, ?, ?)""", (compra_id, item["nombre"], item["cantidad"], item["precio"]))
         c.execute("DELETE FROM carrito WHERE usuario=?", (usuario,))
     else:
         items = session.get("carrito", [])
         total = sum(item["precio"] * item.get("cantidad", 1) for item in items) if items else 0
-        c.execute("INSERT INTO compras (nombre, telefono, direccion, email, total) VALUES (?, ?, ?, ?, ?)", (nombre, telefono, direccion, email, total))
+        c.execute("""INSERT INTO compras (nombre, telefono, direccion, email, total)
+            VALUES (?, ?, ?, ?, ?)""", (nombre, telefono, direccion, email, total))
         compra_id = c.lastrowid
         for item in items:
-            c.execute("INSERT INTO compra_detalle (compra_id, producto_nombre, cantidad, precio_unitario) VALUES (?, ?, ?, ?)", (compra_id, item["nombre"], item.get("cantidad", 1), item["precio"]))
+            c.execute("""INSERT INTO compra_detalle (compra_id, producto_nombre, cantidad, precio_unitario)
+                VALUES (?, ?, ?, ?)""", (compra_id, item["nombre"], item.get("cantidad", 1), item["precio"]))
         session["carrito"] = []
     conn.commit()
     conn.close()
@@ -206,8 +237,17 @@ def admin():
     c = conn.cursor()
     c.execute("SELECT id, nombre, precio, imagen, categoria FROM productos")
     productos = c.fetchall()
-    c.execute("SELECT c.id, c.usuario, c.nombre, c.telefono, c.direccion, c.email, c.total, c.fecha, GROUP_CONCAT(d.producto_nombre || ' x' || d.cantidad) as productos FROM compras c LEFT JOIN compra_detalle d ON c.id = d.compra_id GROUP BY c.id ORDER BY c.fecha DESC")
-    compras = c.fetchall()
+    c.execute("""SELECT c.id, c.usuario, c.nombre, c.telefono, c.direccion, c.email, c.total, c.fecha
+        FROM compras c
+        ORDER BY c.fecha DESC""")
+    compras_raw = c.fetchall()
+    compras = []
+    for compra in compras_raw:
+        c.execute("SELECT producto_nombre || ' x' || cantidad as item FROM compra_detalle WHERE compra_id=?", (compra["id"],))
+        items = [row["item"] for row in c.fetchall()]
+        compra = dict(compra)
+        compra["productos"] = ", ".join(items) if items else ""
+        compras.append(compra)
     c.execute("SELECT id, nombre, email, mensaje, fecha FROM mensajes ORDER BY fecha DESC")
     mensajes = c.fetchall()
     conn.close()
@@ -242,7 +282,8 @@ def add():
         imagen.save(os.path.join(upload_dir, filename))
     conn = get_db()
     c = conn.cursor()
-    c.execute("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (?, ?, ?, ?)", (nombre, precio, filename, categoria))
+    c.execute("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (?, ?, ?, ?)",
+               (nombre, precio, filename, categoria))
     conn.commit()
     conn.close()
     flash("Producto añadido", "success")
@@ -276,7 +317,8 @@ def contacto():
         return redirect(url_for("inicio"))
     conn = get_db()
     c = conn.cursor()
-    c.execute("INSERT INTO mensajes (nombre, email, mensaje) VALUES (?, ?, ?)", (nombre, email, mensaje))
+    c.execute("INSERT INTO mensajes (nombre, email, mensaje) VALUES (?, ?, ?)",
+               (nombre, email, mensaje))
     conn.commit()
     conn.close()
     flash("Mensaje enviado correctamente", "success")
