@@ -77,16 +77,14 @@ def init_db():
 
 init_db()
 
-# Crear usuario admin al iniciar
-def create_admin():
-    conn = sqlite3.connect("tienda.db")
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM usuarios")
-    cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', '1962')")
-    conn.commit()
-    conn.close()
-
-create_admin()
+# Crear usuario admin al iniciar (usar sqlite3.Row para consistencia)
+conn = sqlite3.connect("tienda.db")
+conn.row_factory = sqlite3.Row
+cursor = conn.cursor()
+cursor.execute("DELETE FROM usuarios")
+cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', '1962')")
+conn.commit()
+conn.close()
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
