@@ -83,6 +83,7 @@ conn.row_factory = sqlite3.Row
 cursor = conn.cursor()
 cursor.execute("DELETE FROM usuarios")
 cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', '1962')")
+print("Admin creado: admin/1962")
 conn.commit()
 conn.close()
 
