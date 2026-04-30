@@ -62,6 +62,12 @@ def init_db():
             FOREIGN KEY (compra_id) REFERENCES compras(id)
         )
     """)
+
+    # Crear usuario admin por defecto
+    password = os.environ.get("ADMIN_PASS", "juan1962")
+    cursor.execute("DELETE FROM usuarios")
+    cursor.execute("INSERT INTO usuarios (usuario, password) VALUES (?, ?)", ("admin", password))
+
     conn.commit()
     conn.close()
 
