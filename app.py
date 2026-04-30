@@ -77,18 +77,12 @@ def init_db():
 
 init_db()
 
-# Crear usuario admin si no existe
-import os
+# Crear usuario admin con password 1962
 conn = sqlite3.connect("tienda.db")
 cursor = conn.cursor()
-password = os.environ.get("ADMIN_PASS", "1962")
-cursor.execute("SELECT id FROM usuarios WHERE usuario=?", ("admin",))
-if not cursor.fetchone():
-    cursor.execute("INSERT INTO usuarios (usuario, password) VALUES (?, ?)", ("admin", password))
-    print(f"Usuario admin creado con password: {password}")
-else:
-    cursor.execute("UPDATE usuarios SET password=? WHERE usuario=?", (password, "admin"))
-    print(f"Password admin actualizado a: {password}")
+cursor.execute("DELETE FROM usuarios WHERE usuario='admin'")
+cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', '1962')")
+print("Admin user set: admin/1962")
 conn.commit()
 conn.close()
 
