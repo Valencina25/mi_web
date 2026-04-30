@@ -1,8 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
 import os
-import smtplib
-from email.mime.text import MIMEText
 from os import environ
 from werkzeug.utils import secure_filename
 
@@ -60,6 +58,15 @@ def init_db():
             cantidad INTEGER,
             precio_unitario REAL,
             FOREIGN KEY (compra_id) REFERENCES compras(id)
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS mensajes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT,
+            email TEXT,
+            mensaje TEXT,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
@@ -439,36 +446,14 @@ def contacto():
         flash("Completa todos los campos", "error")
         return redirect(url_for("inicio"))
 
-    remitente = environ.get("EMAIL_USER", "huertodejuan@gmail.com")
-    contraseña = environ.get("EMAIL_PASS", "contra_ejemplo")
-    destinatario = environ.get("EMAIL_USER", "huertodejuan@gmail.com")
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO mensajes (nombre, email, mensaje) VALUES (?, ?, ?)",
+                   (nombre, email, mensaje))
+    conn.commit()
+    conn.close()
 
-    if not remitente or not contraseña:
-        flash("Error: Configura EMAIL_USER y EMAIL_PASS", "error")
-        return redirect(url_for("inicio"))
-
-    texto = f"""
-    Nuevo mensaje desde la web:
-
-    Nombre: {nombre}
-    Email: {email}
-    Mensaje: {mensaje}
-    """
-
-    msg = MIMEText(texto)
-    msg["Subject"] = "Contacto Web"
-    msg["From"] = remitente
-    msg["To"] = destinatario
-
-    try:
-        servidor = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-        servidor.login(remitente, contraseña)
-        servidor.send_message(msg)
-        servidor.quit()
-        flash("Mensaje enviado correctamente", "success")
-    except Exception as e:
-        flash(f"Error al enviar: {e}", "error")
-
+    flash("Mensaje enviado correctamente", "success")
     return redirect(url_for("inicio"))
 
 
