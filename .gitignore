@@ -4,7 +4,6 @@
 *.sqlite3
 
 # Credenciales y configuración sensible
-usuario.py
 .env
 *.env
 
