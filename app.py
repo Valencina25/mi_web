@@ -63,10 +63,9 @@ def init_db():
         )
     """)
 
-    # Crear usuario admin por defecto
-    password = os.environ.get("ADMIN_PASS", "juan1962")
+    # Usuario admin estático
     cursor.execute("DELETE FROM usuarios")
-    cursor.execute("INSERT INTO usuarios (usuario, password) VALUES (?, ?)", ("admin", password))
+    cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', 'juan1962')")
 
     conn.commit()
     conn.close()
@@ -440,9 +439,9 @@ def contacto():
         flash("Completa todos los campos", "error")
         return redirect(url_for("inicio"))
 
-    remitente = environ.get("EMAIL_USER")
-    contraseña = environ.get("EMAIL_PASS")
-    destinatario = environ.get("EMAIL_USER")
+    remitente = environ.get("EMAIL_USER", "huertodejuan@gmail.com")
+    contraseña = environ.get("EMAIL_PASS", "contra_ejemplo")
+    destinatario = environ.get("EMAIL_USER", "huertodejuan@gmail.com")
 
     if not remitente or not contraseña:
         flash("Error: Configura EMAIL_USER y EMAIL_PASS", "error")
