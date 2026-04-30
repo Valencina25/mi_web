@@ -347,9 +347,12 @@ def admin():
     """)
     compras = cursor.fetchall()
 
+    cursor.execute("SELECT id, nombre, email, mensaje, fecha FROM mensajes ORDER BY fecha DESC")
+    mensajes = cursor.fetchall()
+
     conn.close()
 
-    return render_template("admin.html", productos=productos, compras=compras)
+    return render_template("admin.html", productos=productos, compras=compras, mensajes=mensajes)
 
 
 # -------------------------

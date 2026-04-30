@@ -114,6 +114,24 @@
             <p style="text-align: center; color: var(--text-secondary);">No hay compras aún</p>
             {% endif %}
         </div>
+
+        <div class="container" style="margin-top: var(--space-2xl);">
+            <h2 class="section-title">📩 Mensajes Recibidos</h2>
+
+            {% if mensajes %}
+            <div style="max-width: 800px; margin: 0 auto;">
+                {% for m in mensajes %}
+                <div class="producto" style="padding: var(--space-lg); margin-bottom: var(--space-md);">
+                    <p><strong>{{ m.nombre }}</strong> - {{ m.email }}</p>
+                    <p style="color: var(--text-secondary); font-size: var(--text-sm);">{{ m.fecha }}</p>
+                    <p>{{ m.mensaje }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="text-align: center; color: var(--text-secondary);">No hay mensajes aún</p>
+            {% endif %}
+        </div>
     </main>
 
 </body>
