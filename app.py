@@ -77,6 +77,16 @@ def init_db():
 
 init_db()
 
+# Crear usuario admin si no existe
+import os
+conn = sqlite3.connect("tienda.db")
+cursor = conn.cursor()
+password = os.environ.get("ADMIN_PASS", "1962")
+cursor.execute("SELECT id FROM usuarios WHERE usuario=?", ("admin",))
+if not cursor.fetchone():
+    cursor.execute("INSERT INTO usuarios (usuario, password) VALUES (?, ?)", ("admin", password))
+    conn.commit()
+conn.close()
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
