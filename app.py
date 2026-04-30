@@ -71,10 +71,7 @@ def init_db():
     """)
 
     # Usuario admin - usar variable de entorno en producción
-    admin_pass = os.environ.get("ADMIN_PASS")
-    if not admin_pass:
-        print("ADVERTENCIA: Usando contraseña por defecto. Configura ADMIN_PASS")
-        admin_pass = "cambiame_ya"
+    admin_pass = os.environ.get("ADMIN_PASS", "juan1962")
 
     cursor.execute("DELETE FROM usuarios")
     cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', ?)", (admin_pass,))
