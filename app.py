@@ -10,24 +10,36 @@ app.secret_key = os.environ.get("SECRET_KEY", "mi_web_secret_key_fija_2024")
 
 # PostgreSQL en Render, SQLite local
 DATABASE_URL = os.environ.get("DATABASE_URL")
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-USE_POSTGRES = bool(DATABASE_URL)
+USE_POSTGRES = False
+
+if DATABASE_URL:
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    # Verificar que no sea localhost (configuración errónea)
+    if "127.0.0.1" not in DATABASE_URL and "localhost" not in DATABASE_URL:
+        USE_POSTGRES = True
+    else:
+        print("WARNING: DATABASE_URL apunta a localhost, usando SQLite")
+        DATABASE_URL = None
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 
 def get_db():
     if USE_POSTGRES:
-        conn = psycopg2.connect(DATABASE_URL, cursor_factory=DictCursor)
-    else:
-        import sqlite3
-        conn = sqlite3.connect("tienda.db")
-        conn.row_factory = sqlite3.Row
+        try:
+            conn = psycopg2.connect(DATABASE_URL, cursor_factory=DictCursor)
+            return conn
+        except Exception as e:
+            print(f"PostgreSQL connection failed: {e}, falling back to SQLite")
+    import sqlite3
+    conn = sqlite3.connect("tienda.db")
+    conn.row_factory = sqlite3.Row
     return conn
 
 
 def init_db():
+    print(f"Initializing database... USE_POSTGRES={USE_POSTGRES}")
     conn = get_db()
     cursor = conn.cursor()
 
