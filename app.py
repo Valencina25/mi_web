@@ -70,12 +70,7 @@ def init_db():
         )
     """)
 
-    # Usuario admin - usar variable de entorno en producción
-    admin_pass = os.environ.get("ADMIN_PASS", "juan1962")
-
-    cursor.execute("DELETE FROM usuarios")
-    cursor.execute("INSERT INTO usuarios (usuario, password) VALUES ('admin', ?)", (admin_pass,))
-
+    # Solo crear tabla, no insertar usuario
     conn.commit()
     conn.close()
 
@@ -460,6 +455,30 @@ def contacto():
 
     flash("Mensaje enviado correctamente", "success")
     return redirect(url_for("inicio"))
+
+
+# -------------------------
+# 🔑 CAMBIAR CONTRASEÑA
+# -------------------------
+@app.route("/cambiar_password", methods=["POST"])
+def cambiar_password():
+
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
+    nueva = request.form.get("nueva", "").strip()
+    if not nueva:
+        flash("Contraseña vacía", "error")
+        return redirect(url_for("admin"))
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE usuarios SET password=? WHERE usuario=?", (nueva, session["usuario"]))
+    conn.commit()
+    conn.close()
+
+    flash("Contraseña actualizada", "success")
+    return redirect(url_for("admin"))
 
 
 # -------------------------

@@ -83,12 +83,27 @@
                         <p class="producto-categoria">{{ p[4] }}</p>
                         <p class="producto-precio">{{ p[2] }} €</p>
 
-                        <a href="/delete/{{ p[0] }}" class="btn btn-outline"
-                           onclick="return confirm('¿Eliminar {{ p[1] }}?')"
-                           aria-label="Eliminar {{ p[1] }}">
-                            🗑️ Eliminar
-                        </a>
+                <a href="/delete/{{ p[0] }}" class="btn btn-outline"
+                   onclick="return confirm('¿Eliminar {{ p[1] }}?')"
+                   aria-label="Eliminar {{ p[1] }}">
+                    🗑️ Eliminar
+                </a>
+            </article>
+            {% endfor %}
+        </div>
+
+        <div style="max-width: 600px; margin: var(--space-xl) auto;">
+            <div class="producto" style="padding: var(--space-xl);">
+                <h2 style="margin-bottom: var(--space-lg);">🔑 Cambiar Contraseña</h2>
+                <form action="/cambiar_password" method="POST">
+                    <div class="form-group">
+                        <label for="nueva">Nueva contraseña</label>
+                        <input type="password" id="nueva" name="nueva" class="form-input" required>
                     </div>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </form>
+            </div>
+        </div>
                 </article>
                 {% endfor %}
             </div>
