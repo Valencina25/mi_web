@@ -66,6 +66,7 @@ def init_db():
             ("Tomate rosa", 4.0, "tomate rosa.jpg", "verduras"),
             ("fresa", 5.0, "fresa.jpg", "frutas"),
             ("pera", 2.8, "pera.jpg", "frutas"),
+            ("albaricoque", 6.0, "albaricoque.jpg", "frutas"),
         ]
         c.executemany("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (?, ?, ?, ?)", productos_iniciales)
     conn.commit()
