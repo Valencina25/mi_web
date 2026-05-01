@@ -44,7 +44,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="precio">Precio (€)</label>
+                             <label for="precio">Precio (€/kg)</label>
                             <input type="number" id="precio" name="precio" step="0.01" min="0" class="form-input" required>
                         </div>
 
@@ -81,7 +81,7 @@
                     <div class="producto-content">
                         <h3 class="producto-title">{{ p[1] }}</h3>
                         <p class="producto-categoria">{{ p[4] }}</p>
-                        <p class="producto-precio">{{ p[2] }} €</p>
+                        <p class="producto-precio">{{ p[2] }} €/kg</p>
 
                 <a href="/delete/{{ p[0] }}" class="btn btn-outline"
                    onclick="return confirm('¿Eliminar {{ p[1] }}?')"
