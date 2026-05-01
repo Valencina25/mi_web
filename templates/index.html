@@ -11,6 +11,15 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute:'2-digit', second:'2-digit' };
+            document.getElementById('clock').innerHTML = now.toLocaleString('es-ES', options);
+        }
+        setInterval(updateClock, 1000);
+        window.onload = updateClock;
+    </script>
 </head>
 
 <body>
