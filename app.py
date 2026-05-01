@@ -46,6 +46,28 @@ def init_db():
         nombre TEXT, email TEXT, mensaje TEXT,
         fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )""")
+    # Insertar productos iniciales si la tabla está vacía
+    c.execute("SELECT COUNT(*) FROM productos")
+    if c.fetchone()[0] == 0:
+        productos_iniciales = [
+            ("pimiento italiano", 3.0, "pimiento italiano.jpg", "verduras"),
+            ("cebollino", 2.0, "cebollino.jpg", "verduras"),
+            ("berejana morada", 2.0, "berejena morada.jpg", "verduras"),
+            ("calabazin", 2.0, "calabazin negro.jpg", "verduras"),
+            ("cebolla", 2.0, "cebolla.jpg", "verduras"),
+            ("puerro", 2.0, "puerro.jpg", "verduras"),
+            ("zanahoria", 1.0, "zanohoria.jpg", "verduras"),
+            ("aguacate", 5.0, "aguacate.jpg", "verduras"),
+            ("espinaca", 2.0, "espinaca.jpg", "verduras"),
+            ("patata", 1.0, "patata.jpg", "verduras"),
+            ("acelga", 2.0, "acelga.jpg", "verduras"),
+            ("lechuga", 1.5, "lechuga.jpg", "verduras"),
+            ("ajos", 6.0, "ajos.jpg", "verduras"),
+            ("Tomate rosa", 4.0, "tomate rosa.jpg", "verduras"),
+            ("fresa", 5.0, "fresa.jpg", "frutas"),
+            ("pera", 2.8, "pera.jpg", "frutas"),
+        ]
+        c.executemany("INSERT INTO productos (nombre, precio, imagen, categoria) VALUES (?, ?, ?, ?)", productos_iniciales)
     conn.commit()
     conn.close()
 
