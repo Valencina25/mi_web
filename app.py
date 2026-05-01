@@ -236,7 +236,8 @@ def admin():
     c = conn.cursor()
     c.execute("SELECT id, nombre, precio, imagen, categoria FROM productos")
     productos = c.fetchall()
-    c.execute("""SELECT c.id, c.usuario, c.nombre, c.telefono, c.direccion, c.email, c.total, c.fecha
+    c.execute("""SELECT c.id, c.usuario, c.nombre, c.telefono, c.direccion, c.email, c.total,
+        strftime('%d/%m/%Y %H:%M', c.fecha) as fecha
         FROM compras c
         ORDER BY c.fecha DESC""")
     compras_raw = c.fetchall()
@@ -248,7 +249,7 @@ def admin():
         compra_dict = dict(compra)
         compra_dict["productos"] = ", ".join(items) if items else ""
         compras.append(compra_dict)
-    c.execute("SELECT id, nombre, email, mensaje, fecha FROM mensajes ORDER BY fecha DESC")
+    c.execute("SELECT id, nombre, email, mensaje, strftime('%d/%m/%Y %H:%M', fecha) as fecha FROM mensajes ORDER BY fecha DESC")
     mensajes = c.fetchall()
     conn.close()
     return render_template("admin.html", productos=productos, compras=compras, mensajes=mensajes)
